@@ -144,6 +144,9 @@ rest:
 - The local web UI bundle also references additional endpoints like `GetNetworkInfo`, `ListNetworkProfile`, `ListLocalCards`, `ocppGetVariables`, and `ocppSetVariables`, which may allow broader monitoring or configuration in future work.[file:1]
 - The meter field is currently treated as raw until its exact units are confirmed from live responses.[file:1]
 
+## Screenshot
+<img width="1962" height="1322" alt="image" src="https://github.com/user-attachments/assets/1360b015-6d71-426d-acac-63305eb107e2" />
+
 
 ## Credits
 
