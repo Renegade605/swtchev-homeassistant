@@ -4,7 +4,7 @@ A HACS custom integration for Swtch / Joint Tech EVL007 chargers using the charg
 
 ## Features
 
-- UI config flow asks for:
+- UI config flow for:
   - IP address
   - Scan interval (seconds)
   - Timeout (seconds)
@@ -24,22 +24,21 @@ A HACS custom integration for Swtch / Joint Tech EVL007 chargers using the charg
   - Connected
   - Active
 
+## Repository layout
+
+Upload this repository with the `custom_components/swtchev/` folder intact.
+
 ## Installation with HACS
 
-1. Create a new GitHub repository.
-2. Upload the contents of this zip to the repository root.
-3. In Home Assistant, open HACS.
-4. Go to **Integrations**.
-5. Open the menu in the top right and choose **Custom repositories**.
-6. Add your GitHub repository URL as type **Integration**.
-7. Install **Swtch EV Charger** from HACS.
-8. Restart Home Assistant.
-9. Go to **Settings -> Devices & Services -> Add Integration**.
-10. Search for **Swtch EV Charger**.
-11. Enter the charger IP address, scan interval, and timeout.
+1. Add this repository to HACS as a custom repository of type **Integration**.
+2. Install **Swtch EV Charger** from HACS.
+3. Restart Home Assistant.
+4. Go to **Settings -> Devices & Services -> Add Integration**.
+5. Search for **Swtch EV Charger**.
+6. Enter the charger IP address, scan interval, and timeout.
 
 ## Notes
 
-- The charger JSON appears to use the key `availablity` instead of `availability`, so this integration uses the device's actual field name.
-- If future firmware requires bearer token authentication, extend `api.py`.
+- The charger JSON uses the key `availablity` instead of `availability`, so this integration intentionally reads the device's original field name.
 - Scan interval and timeout can be changed later from the integration options.
+- If future firmware requires authentication, extend `api.py`.
