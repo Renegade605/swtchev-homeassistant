@@ -1,9 +1,0 @@
-- resource: "http://CHARGER_IP/api/GetChargingStationInfo"
-  scan_interval: 15
-  timeout: 10
-  sensor:
-    - name: joint_charger_api
-      unique_id: joint_charger_api
-      value_template: "{{ value_json.code }}"
-      json_attributes:
-        - data
