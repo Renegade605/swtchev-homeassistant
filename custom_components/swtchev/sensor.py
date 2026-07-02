@@ -64,6 +64,7 @@ SENSORS: tuple[SwtchSensorDescription, ...] = (
         key="meter_raw",
         name="Meter Raw",
         path=("data", "csInfo", "evses", 0, "connectors", 0, "Meter"),
+        state_class=SensorStateClass.MEASUREMENT,
         value_type="float",
     ),
     SwtchSensorDescription(
