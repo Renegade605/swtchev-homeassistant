@@ -8,6 +8,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, Sen
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfElectricCurrent, UnitOfElectricPotential, UnitOfPower
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
@@ -33,6 +34,8 @@ SENSORS: tuple[SwtchSensorDescription, ...] = (
         key="cp_status",
         name="CP Status",
         path=("data", "csInfo", "evses", 0, "connectors", 0, "cpStatus"),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     SwtchSensorDescription(
         key="voltage",
@@ -40,8 +43,10 @@ SENSORS: tuple[SwtchSensorDescription, ...] = (
         path=("data", "csInfo", "evses", 0, "connectors", 0, "voltage"),
         device_class=SensorDeviceClass.VOLTAGE,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        suggested_display_precision=1,
         state_class=SensorStateClass.MEASUREMENT,
         value_type="float",
+        entity_registry_visible_default=False,
     ),
     SwtchSensorDescription(
         key="current",
@@ -49,14 +54,18 @@ SENSORS: tuple[SwtchSensorDescription, ...] = (
         path=("data", "csInfo", "evses", 0, "connectors", 0, "current"),
         device_class=SensorDeviceClass.CURRENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        suggested_display_precision=2,
         state_class=SensorStateClass.MEASUREMENT,
         value_type="float",
+        entity_registry_visible_default=False,
     ),
     SwtchSensorDescription(
         key="power",
         name="Power",
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.WATT,
+        suggested_unit_of_measurement=UnitOfPower.KILO_WATT,
+        suggested_display_precision=2,
         state_class=SensorStateClass.MEASUREMENT,
         value_type="power",
     ),
@@ -64,18 +73,23 @@ SENSORS: tuple[SwtchSensorDescription, ...] = (
         key="meter_raw",
         name="Meter Raw",
         path=("data", "csInfo", "evses", 0, "connectors", 0, "Meter"),
+        suggested_display_precision=0,
         state_class=SensorStateClass.MEASUREMENT,
         value_type="float",
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SwtchSensorDescription(
         key="firmware",
         name="Firmware",
         path=("data", "csInfo", "chargingStation", "firmwareVersion"),
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SwtchSensorDescription(
         key="mode",
         name="Mode",
         path=("data", "csInfo", "chargingMode"),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -116,7 +130,7 @@ class SwtchSensorEntity(SwtchCoordinatorEntity, SensorEntity):
                 data, ("data", "csInfo", "evses", 0, "connectors", 0, "voltage"), 0
             )
             try:
-                return round(float(current) * float(voltage), 1)
+                return round(float(current) * float(voltage) * 0.001, 1)
             except (TypeError, ValueError):
                 return None
 
