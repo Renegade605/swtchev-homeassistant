@@ -9,10 +9,22 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_TIMEOUT
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.selector import NumberSelector, NumberSelectorConfig, NumberSelectorMode, TextSelector, TextSelectorConfig
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+)
 
-from .api import SwtchApiClient, SwtchApiConnectionError, SwtchApiError, SwtchApiResponseError
-from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, DOMAIN
+from .api import (
+    SwtchApiAuthError,
+    SwtchApiClient,
+    SwtchApiConnectionError,
+    SwtchApiError,
+    SwtchApiResponseError,
+)
+from .const import CONF_SCAN_INTERVAL, CONF_TOKEN, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, DOMAIN
 
 
 def build_user_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
@@ -22,6 +34,11 @@ def build_user_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
         {
             vol.Required(CONF_HOST, default=defaults.get(CONF_HOST, "")): TextSelector(
                 TextSelectorConfig(type="text")
+            ),
+            vol.Required(
+                CONF_TOKEN, default=defaults.get(CONF_TOKEN, "")
+            ): TextSelector(
+                TextSelectorConfig(type="password")
             ),
             vol.Required(
                 CONF_SCAN_INTERVAL,
@@ -50,6 +67,7 @@ class SwtchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             host = str(user_input[CONF_HOST]).strip()
+            token = str(user_input[CONF_TOKEN]).strip()
             scan_interval = int(user_input[CONF_SCAN_INTERVAL])
             timeout = int(user_input[CONF_TIMEOUT])
 
@@ -57,23 +75,28 @@ class SwtchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
 
             session = async_get_clientsession(self.hass)
-            client = SwtchApiClient(session=session, host=host, timeout=timeout)
+            client = SwtchApiClient(
+                session=session, host=host, timeout=timeout, token=token
+            )
 
             try:
                 await client.async_get_station_info()
+            except SwtchApiAuthError:
+                errors["base"] = "invalid_auth"
             except SwtchApiConnectionError:
                 errors["base"] = "cannot_connect"
             except SwtchApiResponseError:
                 errors["base"] = "invalid_response"
             except SwtchApiError:
                 errors["base"] = "unknown"
-            except Exception:
+            except Exception:  # noqa: BLE001
                 errors["base"] = "unknown"
             else:
                 return self.async_create_entry(
                     title=f"Swtch EV Charger ({host})",
                     data={
                         CONF_HOST: host,
+                        CONF_TOKEN: token,
                         CONF_SCAN_INTERVAL: scan_interval,
                         CONF_TIMEOUT: timeout,
                     },
@@ -106,12 +129,16 @@ class SwtchOptionsFlowHandler(config_entries.OptionsFlowWithReload):
             return self.async_create_entry(
                 title="",
                 data={
+                    CONF_TOKEN: str(user_input[CONF_TOKEN]).strip(),
                     CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
                     CONF_TIMEOUT: int(user_input[CONF_TIMEOUT]),
                 },
             )
 
         current = {
+            CONF_TOKEN: self._config_entry.options.get(
+                CONF_TOKEN, self._config_entry.data.get(CONF_TOKEN, "")
+            ),
             CONF_SCAN_INTERVAL: self._config_entry.options.get(
                 CONF_SCAN_INTERVAL,
                 self._config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
@@ -125,6 +152,9 @@ class SwtchOptionsFlowHandler(config_entries.OptionsFlowWithReload):
         schema = vol.Schema(
             {
                 vol.Required(
+                    CONF_TOKEN, default=current[CONF_TOKEN]
+                ): TextSelector(TextSelectorConfig(type="password")),
+                vol.Required(
                     CONF_SCAN_INTERVAL, default=current[CONF_SCAN_INTERVAL]
                 ): NumberSelector(
                     NumberSelectorConfig(min=5, max=3600, step=1, mode=NumberSelectorMode.BOX)
@@ -134,5 +164,4 @@ class SwtchOptionsFlowHandler(config_entries.OptionsFlowWithReload):
                 ),
             }
         )
-
         return self.async_show_form(step_id="init", data_schema=schema)

@@ -8,4 +8,5 @@ DEFAULT_SCAN_INTERVAL = 15
 DEFAULT_TIMEOUT = 10
 
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_TOKEN = "api_token"
 PLATFORMS = ["sensor", "binary_sensor"]
