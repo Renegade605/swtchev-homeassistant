@@ -44,7 +44,7 @@ The token is obtained from the charger web UI in your local network. Treat it li
 
 ### Browser method
 
-1. Browse to `http://<charger-ip>`; for example, `http://10.10.10.35`.
+1. Browse to `http://<charger-ip>`; for example, `http://10.10.10.20`.
 2. Sign in to the charger web interface.
 3. Press **F12** to open browser Developer Tools.
 4. Open **Network** and enable **Preserve log**.
@@ -66,7 +66,7 @@ Do not include the word `Bearer` in the Home Assistant field; the integration ad
 Before configuring Home Assistant, you can test the token from a machine on the same network:
 
 ```powershell
-$ip = "10.10.10.35"
+$ip = "10.10.10.20"
 $token = "PASTE_TOKEN_HERE"
 
 curl.exe -sS `
